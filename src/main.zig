@@ -115,16 +115,20 @@ const Point = struct {
         return Point{ .x = x, .y = y };
     }
 
-    // pub fn distance(self: *Point) f64 {
-    //     return @sqrt(self.x * self.x + self.y * self.y);
-    // }
+    pub fn distance(self: *const Point) f64 {
+        const x = @as(f64, self.x);
+        const y = @as(f64, self.y);
+        return @sqrt(x * x + y * y);
+    }
 };
 
 pub fn struct_example() !void {
     const p = Point.init(3, 4);
     assert(p.x == 3);
     assert(p.y == 4);
-    // assert(@as(i32, p.distance()) == 5.0);
+    // const i: i32
+    const i: i32 = @intFromFloat(p.distance());
+    assert(i == 5);
 }
 
 /// 聯合
@@ -189,7 +193,7 @@ const Borrow = struct {
     read: comptime_int,
 
     pub fn init() Borrow {
-        return comptime Borrow { .read = 0 };
+        return comptime Borrow{ .read = 0 };
     }
 
     pub fn addRef(self: *Borrow) void {
@@ -245,4 +249,11 @@ pub fn main() !void {
     try loop_example();
     try defer_example();
     try comptime_example();
+
+    // 類型
+    const i: i32 = 4;
+    print("i: {}\n", .{i});
+    const f: f64 = i;
+    print("f: {}\n", .{f});
+    print("sqrt: {}\n", .{@sqrt(@as(f64, i))});
 }
