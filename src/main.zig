@@ -115,20 +115,65 @@ const Point = struct {
         return Point{ .x = x, .y = y };
     }
 
-    pub fn distance(self: *const Point) f64 {
-        const x = @as(f64, self.x);
-        const y = @as(f64, self.y);
-        return @sqrt(x * x + y * y);
-    }
+    // pub fn distance(self: *const Point) f64 {
+    //     const x = @as(f64, self.x);
+    //     const y = @as(f64, self.y);
+    //     return @sqrt(x * x + y * y);
+    // }
 };
+
+const Node = struct {
+    value: i32,
+    next: ?*Node, // 可空指針
+};
+
+// const List = struct {
+//     head: ?*Node, // 可空指針
+//     tail: ?*Node, // 可空指針
+
+//     pub fn init() List {
+//         return List{ .head = null, .tail = null };
+//     }
+
+//     pub fn push(self: *List, value: i32) void {
+//         var node = Node{ .value = value, .next = null };
+//         if (self.head == null) {
+//             self.head = &node;
+//             self.tail = &node;
+//         }
+//         if (self.tail != null) {
+//             self.tail.?.next = &node; // 解地址
+//             self.tail = &node;
+//         }
+//     }
+
+//     pub fn pop(self: *List) ?i32 {
+//         if (self.tail == null) {
+//             return null;
+//         } else {
+//             const value = self.tail.?.value; // 解地址
+//             self.tail = self.tail.?.next; // 解地址
+//             return value;
+//         }
+//     }
+// };
+
+pub fn list_example() !void {
+    // var list = List.init();
+    // list.push(1);
+    // list.push(2);
+    // list.push(3);
+    // assert(list.pop() == 3);
+    // assert(list.pop() == 2);
+}
 
 pub fn struct_example() !void {
     const p = Point.init(3, 4);
     assert(p.x == 3);
     assert(p.y == 4);
     // const i: i32
-    const i: i32 = @intFromFloat(p.distance());
-    assert(i == 5);
+    // const i: i32 = @intFromFloat(p.distance());
+    // assert(i == 5);
 }
 
 /// 聯合
@@ -233,6 +278,25 @@ pub fn comptime_example() !void {
     assert(comptime borrow.check());
 }
 
+fn sqrt(a: i32, b: i32) f64 {
+    return @as(f64, a * a + b * b);
+}
+
+fn point_example() !void {
+    // 單項指針
+    var i: i32 = 0;
+    const p = &i;
+    p.* = 1;
+    assert(i == 1);
+
+    // 多項指針
+    var a = [_]i32{ 1, 2, 3, 4, 5 };
+    const pa = &a;
+    pa[0] = 0;
+    assert(pa[0] == 0);
+    assert(pa.len == 5);
+}
+
 pub fn main() !void {
     try print_example();
     try var_example();
@@ -249,11 +313,20 @@ pub fn main() !void {
     try loop_example();
     try defer_example();
     try comptime_example();
+    try point_example();
+    try list_example();
 
     // 類型
-    const i: i32 = 4;
-    print("i: {}\n", .{i});
-    const f: f64 = i;
-    print("f: {}\n", .{f});
-    print("sqrt: {}\n", .{@sqrt(@as(f64, i))});
+    {
+        const i: i32 = 4;
+        print("i: {}\n", .{i});
+        const f: f64 = i;
+        print("f: {}\n", .{f});
+        print("sqrt: {}\n", .{@sqrt(@as(f64, i))});
+    }
+
+    {
+        // const f: f64 = sqrt(3, 4);
+        // print("f: {}\n", .{f});
+    }
 }
