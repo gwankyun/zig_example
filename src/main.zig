@@ -4,6 +4,7 @@ const std = @import("std");
 const print = std.debug.print;
 const assert = std.debug.assert;
 const mem = std.mem;
+const list = @import("list.zig");
 
 pub fn print_example() !void {
     const io = std.io;
@@ -122,49 +123,38 @@ const Point = struct {
     // }
 };
 
-const Node = struct {
-    value: i32,
-    next: ?*Node, // 可空指針
-};
-
-// const List = struct {
-//     head: ?*Node, // 可空指針
-//     tail: ?*Node, // 可空指針
-
-//     pub fn init() List {
-//         return List{ .head = null, .tail = null };
-//     }
-
-//     pub fn push(self: *List, value: i32) void {
-//         var node = Node{ .value = value, .next = null };
-//         if (self.head == null) {
-//             self.head = &node;
-//             self.tail = &node;
-//         }
-//         if (self.tail != null) {
-//             self.tail.?.next = &node; // 解地址
-//             self.tail = &node;
-//         }
-//     }
-
-//     pub fn pop(self: *List) ?i32 {
-//         if (self.tail == null) {
-//             return null;
-//         } else {
-//             const value = self.tail.?.value; // 解地址
-//             self.tail = self.tail.?.next; // 解地址
-//             return value;
-//         }
-//     }
+// const ListNode = struct {
+//     value: i32,
+//     prev: ?*ListNode, // 可空指針
+//     next: ?*ListNode, // 可空指針
 // };
 
-pub fn list_example() !void {
-    // var list = List.init();
-    // list.push(1);
-    // list.push(2);
-    // list.push(3);
-    // assert(list.pop() == 3);
-    // assert(list.pop() == 2);
+pub fn list_example(allocator: std.mem.Allocator) !void {
+    var lst = list.List(i32).init(allocator);
+    defer lst.deinit();
+
+    _ = try lst.pushBack(1);
+    _ = try lst.pushBack(2);
+    _ = try lst.pushBack(3);
+    assert(lst.size == 3);
+    assert(lst.head.?.value == 1);
+    assert(lst.tail.?.value == 3);
+    _ = try lst.pushFront(0);
+    assert(lst.size == 4);
+    assert(lst.head.?.value == 0);
+    assert(lst.tail.?.value == 3);
+
+    {
+        const value = try lst.popBack();
+        assert(value == 3);
+        assert(lst.size == 3);
+    }
+
+    {
+        const value = try lst.popFront();
+        assert(value == 0);
+        assert(lst.size == 2);
+    }
 }
 
 pub fn struct_example() !void {
@@ -314,7 +304,11 @@ pub fn main() !void {
     try defer_example();
     try comptime_example();
     try point_example();
-    try list_example();
+
+    var gpa =
+        std.heap.DebugAllocator(std.heap.DebugAllocatorConfig{}){};
+    const allocator = gpa.allocator();
+    try list_example(allocator);
 
     // 類型
     {
@@ -325,8 +319,5 @@ pub fn main() !void {
         print("sqrt: {}\n", .{@sqrt(@as(f64, i))});
     }
 
-    {
-        // const f: f64 = sqrt(3, 4);
-        // print("f: {}\n", .{f});
-    }
+    {}
 }
