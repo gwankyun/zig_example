@@ -5,6 +5,7 @@ const print = std.debug.print;
 const assert = std.debug.assert;
 const mem = std.mem;
 const list = @import("list.zig");
+const testing = std.testing;
 
 pub fn print_example() !void {
     const io = std.io;
@@ -137,6 +138,9 @@ pub fn list_example(allocator: std.mem.Allocator) !void {
     _ = try lst.pushBack(2);
     _ = try lst.pushBack(3);
     assert(lst.size == 3);
+    // test "size" {
+    //     try std.testing.expect(lst.size == 3);
+    // };
     assert(lst.head.?.value == 1);
     assert(lst.tail.?.value == 3);
     _ = try lst.pushFront(0);
@@ -154,6 +158,38 @@ pub fn list_example(allocator: std.mem.Allocator) !void {
         const value = try lst.popFront();
         assert(value == 0);
         assert(lst.size == 2);
+    }
+}
+
+test "list" {
+    var gpa =
+        std.heap.DebugAllocator(std.heap.DebugAllocatorConfig{}){};
+    const allocator = gpa.allocator();
+
+    var lst = list.List(i32).init(allocator);
+    defer lst.deinit();
+
+    _ = try lst.pushBack(1);
+    _ = try lst.pushBack(2);
+    _ = try lst.pushBack(3);
+    try testing.expectEqual(lst.size, 3);
+    try testing.expectEqual(lst.head.?.value, 1);
+    try testing.expectEqual(lst.tail.?.value, 3);
+    _ = try lst.pushFront(0);
+    try testing.expectEqual(lst.size, 4);
+    try testing.expectEqual(lst.head.?.value, 0);
+    try testing.expectEqual(lst.tail.?.value, 3);
+
+    {
+        const value = try lst.popBack();
+        try testing.expectEqual(value, 3);
+        try testing.expectEqual(lst.size, 3);
+    }
+
+    {
+        const value = try lst.popFront();
+        try testing.expectEqual(value, 0);
+        try testing.expectEqual(lst.size, 2);
     }
 }
 

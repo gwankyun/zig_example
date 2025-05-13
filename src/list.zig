@@ -56,31 +56,37 @@ pub fn List(comptime T: type) type {
             }
         }
 
-        pub fn pushBack(self: *Self, value: T) !*Node {
-            var node = try self.create(value);
-            if (self.size == 0) {
-                self.head = node;
-                self.tail = node;
-            } else {
-                self.tail.?.next = node;
-                node.prev = self.tail;
-                self.tail = node;
+        fn insert(self: *Self, prev: ?*Node, value: T, next: ?*Node) !*Node {
+            const node = try self.create(value);
+            node.prev = prev;
+            node.next = next;
+            if (prev) |p| {
+                p.next = node;
+            }
+            if (next) |n| {
+                n.prev = node;
             }
             self.size += 1;
             return node;
         }
 
-        pub fn pushFront(self: *Self, value: T) !*Node {
-            var node = try self.create(value);
-            if (self.size == 0) {
-                self.head = node;
-                self.tail = node;
-            } else {
-                self.head.?.prev = node;
-                node.next = self.head;
+        pub fn pushBack(self: *Self, value: T) !*Node {
+            const node =
+                try self.insert(self.tail, value, null);
+            self.tail = node;
+            if (self.size == 1) {
                 self.head = node;
             }
-            self.size += 1;
+            return node;
+        }
+
+        pub fn pushFront(self: *Self, value: T) !*Node {
+            const node =
+                try self.insert(null, value, self.head);
+            self.head = node;
+            if (self.size == 1) {
+                self.tail = node;
+            }
             return node;
         }
 
@@ -104,10 +110,10 @@ pub fn List(comptime T: type) type {
             if (self.size == 0) {
                 return error.EmptyList;
             }
-            const node = self.tail.?;
-            const value = node.value;
-            self.tail = node.prev;
-            self.remove(node);
+            const tail = self.tail.?;
+            const value = tail.value;
+            self.tail = tail.prev;
+            self.remove(tail);
             return value;
         }
 
@@ -115,10 +121,10 @@ pub fn List(comptime T: type) type {
             if (self.size == 0) {
                 return error.EmptyList;
             }
-            const node = self.head.?;
-            const value = node.value;
-            self.head = node.next;
-            self.remove(node);
+            const head = self.head.?;
+            const value = head.value;
+            self.head = head.next;
+            self.remove(head);
             return value;
         }
     };
