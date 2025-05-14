@@ -1,8 +1,10 @@
 const std = @import("std");
+const testing = std.testing;
+const Allocator = std.mem.Allocator;
 
 pub fn ListNode(comptime T: type) type {
     return struct {
-        const Self = @This();
+        const Self = @This(); // 當前結構體類型
         value: T,
         prev: ?*Self, // 可空指針
         next: ?*Self, // 可空指針
@@ -24,9 +26,9 @@ pub fn List(comptime T: type) type {
         head: ?*Node, // 可空指針
         tail: ?*Node, // 可空指針
         size: usize,
-        allocator: std.mem.Allocator,
+        allocator: Allocator,
 
-        pub fn init(allocator: std.mem.Allocator) Self {
+        pub fn init(allocator: Allocator) Self {
             return Self{
                 .head = null,
                 .tail = null,
@@ -128,4 +130,45 @@ pub fn List(comptime T: type) type {
             return value;
         }
     };
+}
+
+pub const Test = struct {
+    test "list" {
+        const heap = std.heap;
+        var gpa =
+            heap.DebugAllocator(heap.DebugAllocatorConfig{}){};
+        const allocator = gpa.allocator();
+        const expectEqual =
+            testing.expectEqual;
+
+        var lst = List(i32).init(allocator);
+        defer lst.deinit();
+
+        _ = try lst.pushBack(1);
+        _ = try lst.pushBack(2);
+        _ = try lst.pushBack(3);
+        try expectEqual(lst.size, 3);
+        try expectEqual(lst.head.?.value, 1);
+        try expectEqual(lst.tail.?.value, 3);
+        _ = try lst.pushFront(0);
+        try expectEqual(lst.size, 4);
+        try expectEqual(lst.head.?.value, 0);
+        try expectEqual(lst.tail.?.value, 3);
+
+        {
+            const value = try lst.popBack();
+            try expectEqual(value, 3);
+            try expectEqual(lst.size, 3);
+        }
+
+        {
+            const value = try lst.popFront();
+            try expectEqual(value, 0);
+            try expectEqual(lst.size, 2);
+        }
+    }
+};
+
+test "list" {
+    _ = Test;
 }

@@ -5,6 +5,7 @@ const print = std.debug.print;
 const assert = std.debug.assert;
 const mem = std.mem;
 const list = @import("list.zig");
+const vector = @import("vector.zig");
 const testing = std.testing;
 
 pub fn print_example() !void {
@@ -161,38 +162,6 @@ pub fn list_example(allocator: std.mem.Allocator) !void {
     }
 }
 
-test "list" {
-    var gpa =
-        std.heap.DebugAllocator(std.heap.DebugAllocatorConfig{}){};
-    const allocator = gpa.allocator();
-
-    var lst = list.List(i32).init(allocator);
-    defer lst.deinit();
-
-    _ = try lst.pushBack(1);
-    _ = try lst.pushBack(2);
-    _ = try lst.pushBack(3);
-    try testing.expectEqual(lst.size, 3);
-    try testing.expectEqual(lst.head.?.value, 1);
-    try testing.expectEqual(lst.tail.?.value, 3);
-    _ = try lst.pushFront(0);
-    try testing.expectEqual(lst.size, 4);
-    try testing.expectEqual(lst.head.?.value, 0);
-    try testing.expectEqual(lst.tail.?.value, 3);
-
-    {
-        const value = try lst.popBack();
-        try testing.expectEqual(value, 3);
-        try testing.expectEqual(lst.size, 3);
-    }
-
-    {
-        const value = try lst.popFront();
-        try testing.expectEqual(value, 0);
-        try testing.expectEqual(lst.size, 2);
-    }
-}
-
 pub fn struct_example() !void {
     const p = Point.init(3, 4);
     assert(p.x == 3);
@@ -321,6 +290,61 @@ fn point_example() !void {
     pa[0] = 0;
     assert(pa[0] == 0);
     assert(pa.len == 5);
+}
+
+const Test = struct {
+    const expectEqual = testing.expectEqual;
+    const Detail = struct {
+        fn add(a: i32, b: i32) i32 {
+            return a + b;
+        }
+    };
+
+    test "add" {
+        try testing.expect(Detail.add(1, 2) == 3);
+    }
+
+    test "alloc" {
+        const heap = std.heap;
+        var gpa =
+            heap.DebugAllocator(heap.DebugAllocatorConfig{}){};
+        const allocator = gpa.allocator();
+
+        {
+            const a = try allocator.alloc(i32, 10);
+            defer allocator.free(a);
+
+            var i: i32 = 0;
+            while (i < 10) : (i += 1) {
+                const u: usize = @intCast(i);
+                a[u] = i;
+            }
+
+            const b = try allocator.alloc(i32, 10);
+            defer allocator.free(b);
+            std.mem.copyForwards(i32, b, a);
+            try expectEqual(b[3], 3);
+        }
+
+        {
+            const i: i32 = 3;
+            try expectEqual(@TypeOf(i), i32);
+        }
+
+        {
+            const u: usize = 3;
+            // 類型轉換
+            const i: i32 = @intCast(u);
+            try expectEqual(@TypeOf(i), i32);
+        }
+    }
+};
+
+test "main" {
+    _ = Test;
+    _ = list.Test;
+    _ = vector.Test;
+    try testing.expect(true);
 }
 
 pub fn main() !void {
