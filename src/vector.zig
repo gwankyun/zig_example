@@ -36,6 +36,14 @@ pub fn Vector(comptime T: type) type {
             self.size += 1;
         }
 
+        pub fn pop(self: *Self) !T {
+            if (self.size == 0) {
+                return error.Empty;
+            }
+            self.size -= 1;
+            return self.data[self.size];
+        }
+
         pub fn get(self: *Self, index: usize) !T {
             if (index >= self.size) {
                 return error.IndexOutOfBounds;
@@ -63,6 +71,9 @@ pub const Test = struct {
         try expectEqual(vec.size, 2);
         try expectEqual(vec.get(0), 1);
         try expectEqual(vec.get(1), 2);
+
+        try expectEqual(vec.pop(), 2);
+        try expectEqual(vec.size, 1);
     }
 };
 

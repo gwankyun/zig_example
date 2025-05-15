@@ -6,6 +6,8 @@ const assert = std.debug.assert;
 const mem = std.mem;
 const list = @import("list.zig");
 const vector = @import("vector.zig");
+const stack = @import("stack.zig");
+const queue = @import("queue.zig");
 const testing = std.testing;
 
 pub fn print_example() !void {
@@ -344,6 +346,8 @@ test "main" {
     _ = Test;
     _ = list.Test;
     _ = vector.Test;
+    _ = stack.Test;
+    _ = queue.Test;
     try testing.expect(true);
 }
 
