@@ -306,6 +306,51 @@ const Test = struct {
         try testing.expect(Detail.add(1, 2) == 3);
     }
 
+    test "array" {
+        var a = [_]u32{ 1, 2, 3, 4, 5 }; // _可用具體數字代替
+
+        // 修改數組
+        for (&a) |*value| {
+            value.* += 1;
+        }
+
+        try expectEqual(2, a[0]);
+    }
+
+    test "fn ptr" {
+        const S = struct {
+            g: fn (u32) u32,
+
+            fn f(a: u32) u32 {
+                return a + 1;
+            }
+        };
+        const ptr = &S.f;
+        try expectEqual(2, ptr(1));
+
+        // var s = S{.g = ptr };
+
+        const other = struct {
+            fn h(a: u32) u32 {
+                return a + 2;
+            }
+        }.h;
+
+        const s = S{ .g = other };
+        // try expectEqual(2, s.g(1));
+
+        // s.g = other;
+
+        // // try expectEqual(null, s.g);
+
+        // // s.g = struct {
+        // //     fn h(a: u32) u32 {
+        // //         return a + 2;
+        // //     }
+        // // }.h;
+        try expectEqual(3, s.g(1));
+    }
+
     test "alloc" {
         const heap = std.heap;
         var gpa =

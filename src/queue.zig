@@ -32,6 +32,7 @@ pub fn Queue(comptime T: type) type {
 
         pub fn pop(self: *Self) !T {
             const value = try self.top();
+            // 下標前移
             self.index += 1;
             return value;
         }

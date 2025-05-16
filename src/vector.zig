@@ -50,6 +50,21 @@ pub fn Vector(comptime T: type) type {
             }
             return self.data[index];
         }
+
+        pub fn resize(self: *Self, new_size: usize, value: T) !void {
+            if (new_size > self.capacity) {
+                const new_capacity = new_size;
+                const new_data =
+                    try self.allocator.alloc(T, new_capacity);
+                std.mem.copyForwards(T, new_data, self.data);
+                self.data = new_data;
+                self.capacity = new_capacity;
+            }
+            for (self.data[self.size..new_size]) |*item| {
+                item.* = value;
+            }
+            self.size = new_size;
+        }
     };
 }
 
@@ -74,6 +89,10 @@ pub const Test = struct {
 
         try expectEqual(vec.pop(), 2);
         try expectEqual(vec.size, 1);
+
+        try vec.resize(3, 0);
+        try expectEqual(3, vec.size);
+        try expectEqual(0, vec.get(2));
     }
 };
 
