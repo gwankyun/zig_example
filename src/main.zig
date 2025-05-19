@@ -306,6 +306,19 @@ const Test = struct {
         try testing.expect(Detail.add(1, 2) == 3);
     }
 
+    // test "for" {
+
+    // }
+
+    test "while" {
+        var i: i32 = 0;
+        var result: i32 = 0;
+        while (i < 10) : (i += 1) {
+            result += i;
+        }
+        try expectEqual(45, result);
+    }
+
     test "array" {
         var a = [_]u32{ 1, 2, 3, 4, 5 }; // _可用具體數字代替
 
@@ -317,6 +330,7 @@ const Test = struct {
         try expectEqual(2, a[0]);
     }
 
+    // 函數指針
     test "fn ptr" {
         const S = struct {
             g: fn (u32) u32,
@@ -328,8 +342,7 @@ const Test = struct {
         const ptr = &S.f;
         try expectEqual(2, ptr(1));
 
-        // var s = S{.g = ptr };
-
+        // 不支持匿名函數
         const other = struct {
             fn h(a: u32) u32 {
                 return a + 2;
@@ -337,18 +350,16 @@ const Test = struct {
         }.h;
 
         const s = S{ .g = other };
-        // try expectEqual(2, s.g(1));
 
-        // s.g = other;
-
-        // // try expectEqual(null, s.g);
-
-        // // s.g = struct {
-        // //     fn h(a: u32) u32 {
-        // //         return a + 2;
-        // //     }
-        // // }.h;
         try expectEqual(3, s.g(1));
+    }
+
+    // 可空類型
+    test "option" {
+        var a: ?u32 = null;
+        try expectEqual(null, a);
+        a = 3;
+        try expectEqual(3, a);
     }
 
     test "alloc" {

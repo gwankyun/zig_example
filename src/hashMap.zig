@@ -13,13 +13,15 @@ pub fn hashMap(comptime K: type, comptime V: type) type {
         const Item = *?Node;
         allocator: Allocator,
         data: vector.Vector(Item),
+        hashFunction: fn (K) usize,
 
-        pub fn init(allocator: Allocator, initial_capacity: usize) Self {
+        pub fn init(allocator: Allocator, initial_capacity: usize, hashFunc: fn (K) usize) Self {
             const vec = vector.Vector(Item).init(allocator);
             vec.resize(initial_capacity, null);
             return Self{
                 .allocator = allocator,
                 .data = vec,
+                .hashFunction = hashFunc,
             };
         }
 
