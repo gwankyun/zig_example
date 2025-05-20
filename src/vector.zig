@@ -51,6 +51,13 @@ pub fn Vector(comptime T: type) type {
             return self.data[index];
         }
 
+        pub fn set(self: *Self, index: usize, value: T) !void {
+            if (index >= self.size) {
+                return error.IndexOutOfBounds;
+            }
+            self.data[index] = value;
+        }
+
         pub fn resize(self: *Self, new_size: usize, value: T) !void {
             if (new_size > self.capacity) {
                 const new_capacity = new_size;
@@ -93,6 +100,9 @@ pub const Test = struct {
         try vec.resize(3, 0);
         try expectEqual(3, vec.size);
         try expectEqual(0, vec.get(2));
+
+        try vec.set(1, 3);
+        try expectEqual(3, vec.get(1));
     }
 };
 
