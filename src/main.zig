@@ -29,18 +29,6 @@ pub fn print_example() !void {
     try err_buffer.flush();
 }
 
-/// 變量與常量
-pub fn var_example() !void {
-    var v: u32 = 0; // 默認可變
-    v = 2;
-    print("v: {}\n", .{v});
-    assert(v == 2);
-
-    const c: u32 = 3;
-    print("c: {}\n", .{c});
-    assert(c == 3);
-}
-
 pub fn char_bool_example() !void {
     const c: u8 = 'c';
     print("c: {c}\n", .{c});
@@ -66,42 +54,6 @@ pub fn string_example() !void {
     assert(bytes[0] == 'h');
     assert(bytes[bytes.len - 1] == 'o');
     assert(bytes[bytes.len] == 0); // 以0結束
-}
-
-/// 數組
-pub fn array_example() !void {
-    const a = [_]u32{ 1, 2, 3, 4, 5 }; // _可用具體數字代替
-    print("a[1]: {}\n", .{a[0]});
-    assert(a[0] == 1);
-    assert(a.len == 5);
-    assert(a[a.len - 1] == 5);
-
-    // 哨兵數組
-    const aST = [_:0]u32{ 1, 2, 3, 4, 5 }; // 以0結尾
-    assert(aST.len == 5);
-    assert(aST[a.len - 1] == 5);
-    assert(aST[a.len] == 0);
-}
-
-/// 指針
-pub fn ptr_example() !void {
-    // 單項指針
-    var v: u32 = 0;
-    // 取地址
-    const ptr = &v;
-    // 解地址
-    ptr.* += 1;
-    assert(v == 1);
-
-    // 函數指針
-    const ptr_add = &add;
-    assert(ptr_add(1, 2) == 3);
-
-    //
-    const a = [_]i32{ 1, 2, 3, 4, 5 };
-    const ptr_a = &a;
-    assert(ptr_a[0] == 1);
-    assert(ptr_a.len == 5);
 }
 
 pub fn slice_example() !void {
@@ -214,15 +166,6 @@ pub fn loop_example() !void {
     assert(sum == 13);
 }
 
-pub fn defer_example() !void {
-    defer {
-        print("snd\n", .{});
-    }
-    defer {
-        print("fst\n", .{});
-    }
-}
-
 pub fn max(comptime T: type, a: T, b: T) T {
     if (a > b) {
         return a;
@@ -296,6 +239,7 @@ fn point_example() !void {
 
 const Test = struct {
     const expectEqual = testing.expectEqual;
+    const expect = testing.expect;
     const Detail = struct {
         fn add(a: i32, b: i32) i32 {
             return a + b;
@@ -303,7 +247,16 @@ const Test = struct {
     };
 
     test "add" {
-        try testing.expect(Detail.add(1, 2) == 3);
+        try expect(Detail.add(1, 2) == 3);
+    }
+
+    test "var_const" {
+        var v: u32 = 0; // 默認可變
+        v = 2;
+        try expectEqual(2, v);
+
+        const c: u32 = 3;
+        try expectEqual(3, c);
     }
 
     // test "for" {
@@ -319,8 +272,30 @@ const Test = struct {
         try expectEqual(45, result);
     }
 
+    test "defer" {
+        var i: i32 = 0;
+        try expectEqual(0, i);
+        {
+            defer i += 1;
+            try expectEqual(0, i);
+        }
+        try expectEqual(1, i);
+    }
+
     test "array" {
         var a = [_]u32{ 1, 2, 3, 4, 5 }; // _可用具體數字代替
+        // const a = [_]u32{ 1, 2, 3, 4, 5 }; // _可用具體數字代替
+
+        // print("a[1]: {}\n", .{a[0]});
+        try expect(a[0] == 1);
+        try expect(a.len == 5);
+        try expect(a[a.len - 1] == 5);
+
+        // 哨兵數組
+        const aST = [_:0]u32{ 1, 2, 3, 4, 5 }; // 以0結尾
+        try expect(aST.len == 5);
+        try expect(aST[a.len - 1] == 5);
+        try expect(aST[a.len] == 0);
 
         // 修改數組
         for (&a) |*value| {
@@ -328,6 +303,26 @@ const Test = struct {
         }
 
         try expectEqual(2, a[0]);
+    }
+
+    test "ptr" {
+        // 單項指針
+        var v: u32 = 0;
+        // 取地址
+        const ptr = &v;
+        // 解地址
+        ptr.* += 1;
+        try expect(v == 1);
+
+        // 函數指針
+        const ptr_add = &add;
+        try expect(ptr_add(1, 2) == 3);
+
+        //
+        const a = [_]i32{ 1, 2, 3, 4, 5 };
+        const ptr_a = &a;
+        try expect(ptr_a[0] == 1);
+        try expect(ptr_a.len == 5);
     }
 
     // 函數指針
@@ -409,19 +404,15 @@ test "main" {
 
 pub fn main() !void {
     try print_example();
-    try var_example();
     try char_bool_example();
     assert(add(1, 2) == 3);
     assert(addAny(1, 2) == 3);
-    try array_example();
     try string_example();
-    try ptr_example();
     try slice_example();
     try struct_example();
     try union_example();
     try decision_example();
     try loop_example();
-    try defer_example();
     try comptime_example();
     try point_example();
 
@@ -438,6 +429,4 @@ pub fn main() !void {
         print("f: {}\n", .{f});
         print("sqrt: {}\n", .{@sqrt(@as(f64, i))});
     }
-
-    {}
 }
